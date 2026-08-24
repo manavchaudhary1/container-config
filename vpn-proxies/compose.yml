@@ -1,0 +1,54 @@
+services:
+  proton-india:
+    image: docker.io/qmcgaw/gluetun:latest
+    container_name: proton-india-23
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: wireguard
+      HTTPPROXY: "on"
+      HTTPPROXY_LOG: "off"
+      TZ: Asia/Kolkata
+    volumes:
+      - ./configs/india/wg0.conf:/gluetun/wireguard/wg0.conf:ro,Z
+    ports:
+      - "127.0.0.1:8881:8888/tcp"
+    networks:
+      media_default:
+        aliases:
+          - proton-india
+
+    restart: unless-stopped
+
+
+  proton-us:
+    image: docker.io/qmcgaw/gluetun:latest
+    container_name: proton-us-ma-128
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: wireguard
+      HTTPPROXY: "on"
+      HTTPPROXY_LOG: "off"
+      TZ: Asia/Kolkata
+    volumes:
+      - ./configs/us/wg0.conf:/gluetun/wireguard/wg0.conf:ro,Z
+    ports:
+      - "127.0.0.1:8882:8888/tcp"
+    networks:
+      media_default:
+        aliases:
+          - proton-us
+
+    restart: unless-stopped
+
+
+networks:
+  media_default:
+    external: true
