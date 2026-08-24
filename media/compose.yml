@@ -19,13 +19,14 @@ services:
     environment:
       - PUID=1000
       - PGID=1001
+      - UMASK=002
       - TZ=Asia/Kolkata
       - NZBGET_USER=${NZBGET_USER}
       - NZBGET_PASS=${NZBGET_PASS}
     volumes:
       - ./nzbget/config:/config:Z
-      - ./downloads:/downloads:Z
-      - ./nzb:/nzb:Z
+      - ./downloads:/downloads:z
+      - ./nzb:/nzb:z
     ports:
       - "6789:6789"
     restart: unless-stopped
@@ -33,16 +34,18 @@ services:
   transmission:
       image: lscr.io/linuxserver/transmission:latest
       container_name: transmission
+      userns_mode: "keep-id"
       environment:
         - PUID=1000
-        - PGID=1000
+        - PGID=1001
+        - UMASK=002
         - TZ=Asia/Kolkata
         - USER=${TRANSMISSION_USER}
         - PASS=${TRANSMISSION_PASS}
       volumes:
         - ./transmission/config:/config:Z
-        - ./downloads:/downloads:Z
-        - ./watch:/watch:Z
+        - ./downloads:/downloads:z
+        - ./watch:/watch:z
       ports:
         - "9091:9091"
         - "51413:51413"
