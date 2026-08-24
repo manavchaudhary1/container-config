@@ -23,6 +23,7 @@ media/nzbget/downloads/
 **/*.torrent
 **/*.part
 **/*.tmp
+**/recordings/*
 
 # Beszel runtime state and keys
 monitor/beszel_data/
