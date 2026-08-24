@@ -48,6 +48,10 @@ immich-app/postgres/
 **/credentials*
 **/token*
 
+# Locally generated TLS certificate artifacts
+Rec/adapter/certs/*.csr
+Rec/adapter/certs/*.srl
+
 # Editor / OS noise
 .vscode/
 .idea/
