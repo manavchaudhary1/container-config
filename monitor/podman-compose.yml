@@ -13,12 +13,19 @@ services:
     container_name: beszel-agent-podman
     user: "1000"
     network_mode: host
+
+    security_opt:
+      - label=type:container_runtime_t
+
     environment:
       - KEY=${BESZEL_PODMAN_KEY}
       - TOKEN=${BESZEL_PODMAN_TOKEN}
       - HUB_URL=http://127.0.0.1:8090
       - DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
       - LISTEN=45876
+      - LOG_LEVEL=debug
+
     volumes:
       - /run/user/1000/podman/podman.sock:/run/user/1000/podman/podman.sock:ro
+
     restart: unless-stopped
