@@ -1,0 +1,73 @@
+# Runtime application data / databases / logs
+**/config/
+**/logs/
+**/*.log
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.pid
+**/Sentry/
+**/tmp/
+**/queue/
+**/resume/
+**/torrents/
+**/blocklists/
+
+# Download / watch / NZB payloads
+media/downloads/
+media/nzb/
+media/watch/
+media/nzbget/downloads/
+**/*.nzb
+**/*.nzb.queued
+**/*.torrent
+**/*.part
+**/*.tmp
+
+# Beszel runtime state and keys
+monitor/beszel_data/
+monitor/data/
+**/id_ed25519
+**/id_ed25519.pub
+
+# Immich / database runtime data
+immich-app/postgres/
+**/postgres/
+**/pgdata/
+**/database/
+
+# Secrets and local environment overrides
+.env
+.env.*
+!.env.example
+**/secrets/
+**/*.secret
+**/*.key
+**/*.pem
+**/*.crt
+**/credentials*
+**/token*
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+
+# Compose local override files
+compose.override.yml
+compose.override.yaml
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Backups / archives
+*.bak
+*.backup
+*.old
+*.zip
+*.tar
+*.tar.gz
+*.tgz

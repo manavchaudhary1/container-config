@@ -1,0 +1,62 @@
+services:
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - ./prowlarr/config:/config:Z
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+  nzbget:
+    image: lscr.io/linuxserver/nzbget:latest
+    container_name: nzbget
+    userns_mode: "keep-id"
+    environment:
+      - PUID=1000
+      - PGID=1001
+      - TZ=Asia/Kolkata
+      - NZBGET_USER=${NZBGET_USER}
+      - NZBGET_PASS=${NZBGET_PASS}
+    volumes:
+      - ./nzbget/config:/config:Z
+      - ./downloads:/downloads:Z
+      - ./nzb:/nzb:Z
+    ports:
+      - "6789:6789"
+    restart: unless-stopped
+
+  transmission:
+      image: lscr.io/linuxserver/transmission:latest
+      container_name: transmission
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=Asia/Kolkata
+        - USER=${TRANSMISSION_USER}
+        - PASS=${TRANSMISSION_PASS}
+      volumes:
+        - ./transmission/config:/config:Z
+        - ./downloads:/downloads:Z
+        - ./watch:/watch:Z
+      ports:
+        - "9091:9091"
+        - "51413:51413"
+        - "51413:51413/udp"
+      restart: unless-stopped
+      
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=Asia/Kolkata
+    ports:
+      - "8191:8191"
+    restart: unless-stopped
