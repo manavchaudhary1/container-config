@@ -1,0 +1,51 @@
+services:
+  stripchat-adapter:
+    build:
+      context: ./adapter
+      dockerfile: Containerfile
+    container_name: stripchat-adapter
+    restart: unless-stopped
+    environment:
+      - FLARESOLVERR_URL=http://flaresolverr:8191/v1
+    volumes:
+      - ./adapter/certs:/certs:ro,z
+    networks:
+      - media_default
+
+  stripchat-recorder:
+    image: chantrail/stripchat-recorder:latest
+    container_name: stripchat-recorder
+    restart: unless-stopped
+
+    # The stock image normally starts with /entrypoint.sh.
+    # Install our local CA into the normal system trust store first,
+    # then hand control back to the original entrypoint.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        update-ca-certificates
+        exec /entrypoint.sh
+
+    environment:
+      - TZ=Asia/Kolkata
+      - LANGUAGE=en-US
+
+    ports:
+      - "${PORT:-3030}:${PORT:-3030}"
+
+    volumes:
+      - ./data/logs:/app/stripchat-recorder/logs:Z
+      - ./data/recordings:/app/stripchat-recorder/recordings:Z
+      - ./data/modules:/app/stripchat-recorder/modules:Z
+      - ./data/config:/app/stripchat-recorder/config:Z
+
+      # Shared with adapter, therefore lowercase :z.
+      - ./adapter/certs/ca.crt:/usr/local/share/ca-certificates/stripchat-local.crt:ro,z
+
+    networks:
+      - media_default
+
+networks:
+  media_default:
+    external: true
