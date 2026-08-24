@@ -48,6 +48,7 @@ immich-app/postgres/
 **/*.crt
 **/credentials*
 **/token*
+vpn-proxies/configs/**/*.conf
 
 # Locally generated TLS certificate artifacts
 Rec/adapter/certs/*.csr
