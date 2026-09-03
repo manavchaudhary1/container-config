@@ -63,3 +63,17 @@ services:
     ports:
       - "8191:8191"
     restart: unless-stopped
+  
+  shelfmark:
+    image: ghcr.io/calibrain/shelfmark:latest
+    container_name: shelfmark
+    environment:
+      - TZ=Asia/Kolkata
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./shelfmark/config:/config:Z
+      - ./downloads/books:/books:z
+    ports:
+      - "9084:8084"
+    restart: unless-stopped
