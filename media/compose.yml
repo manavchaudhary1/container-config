@@ -67,12 +67,16 @@ services:
   shelfmark:
     image: ghcr.io/calibrain/shelfmark:latest
     container_name: shelfmark
+    user: "1000:1000"
+    group_add:
+      - keep-groups
     environment:
       - TZ=Asia/Kolkata
-      - PUID=1000
-      - PGID=1000
+      - ALL_PROXY=socks5h://100.110.36.28:1080
+      - NO_PROXY=prowlarr,nzbget,localhost,127.0.0.1
     volumes:
       - ./shelfmark/config:/config:Z
+      - ./downloads:/downloads:z
       - ./downloads/books:/books:z
     ports:
       - "9084:8084"
