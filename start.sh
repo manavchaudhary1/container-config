@@ -102,6 +102,12 @@ podman-compose \
     -f media/compose.yml \
     up -d
 
+echo "==> Starting Podman VPN proxy services..."
+podman-compose \
+    --env-file .env \
+    -f vpn-proxies/compose.yml \
+    up -d
+
 echo "==> Starting Immich services..."
 docker compose \
     --env-file .env \
