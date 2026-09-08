@@ -9,8 +9,7 @@ services:
     environment:
       VPN_SERVICE_PROVIDER: custom
       VPN_TYPE: wireguard
-      HTTPPROXY: "on"
-      HTTPPROXY_LOG: "off"
+      HTTPPROXY: "off"
       TZ: Asia/Kolkata
     volumes:
       - ./configs/india/wg0.conf:/gluetun/wireguard/wg0.conf:ro,Z
@@ -21,6 +20,17 @@ services:
         aliases:
           - proton-india
 
+    restart: unless-stopped
+
+  squid-india:
+    image: docker.io/ubuntu/squid:6.6-24.04_edge
+    container_name: squid-india
+    network_mode: "service:proton-india"
+    depends_on:
+      proton-india:
+        condition: service_started
+    volumes:
+      - ./configs/squid.conf:/etc/squid/squid.conf:ro,z
     restart: unless-stopped
 
 
@@ -34,8 +44,7 @@ services:
     environment:
       VPN_SERVICE_PROVIDER: custom
       VPN_TYPE: wireguard
-      HTTPPROXY: "on"
-      HTTPPROXY_LOG: "off"
+      HTTPPROXY: "off"
       TZ: Asia/Kolkata
     volumes:
       - ./configs/us/wg0.conf:/gluetun/wireguard/wg0.conf:ro,Z
@@ -46,6 +55,17 @@ services:
         aliases:
           - proton-us
 
+    restart: unless-stopped
+
+  squid-us:
+    image: docker.io/ubuntu/squid:6.6-24.04_edge
+    container_name: squid-us
+    network_mode: "service:proton-us"
+    depends_on:
+      proton-us:
+        condition: service_started
+    volumes:
+      - ./configs/squid.conf:/etc/squid/squid.conf:ro,z
     restart: unless-stopped
 
 
