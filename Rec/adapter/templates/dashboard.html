@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stripchat Adapter · Traffic Desk</title>
+  <style>
+    :root {
+      --paper: #edf2f5;
+      --surface: #f9fbfc;
+      --ink: #102a36;
+      --muted: #627782;
+      --line: #c9d5da;
+      --deep: #173f4b;
+      --teal: #1d7a7a;
+      --blue: #2d6ca2;
+      --amber: #c47b20;
+      --red: #b44343;
+      --shadow: 0 18px 55px rgba(35, 63, 75, 0.11);
+      --radius: 16px;
+      font-family: "Aptos", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        linear-gradient(rgba(23, 63, 75, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 63, 75, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 28px 28px;
+    }
+    button { font: inherit; }
+    .shell { width: min(1500px, calc(100% - 32px)); margin: 24px auto 48px; }
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      padding: 28px 30px;
+      color: #f5fafb;
+      background: var(--deep);
+      border-radius: 22px 22px 8px 8px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .masthead::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 0 auto;
+      width: 36%;
+      opacity: 0.22;
+      background: repeating-linear-gradient(118deg, transparent 0 17px, rgba(255, 255, 255, 0.3) 18px, transparent 19px 35px);
+      pointer-events: none;
+    }
+    .eyebrow, .section-label, th {
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+    }
+    .eyebrow { margin: 0 0 8px; color: #9bcaca; font-size: 12px; }
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-family: "Arial Narrow", "Aptos Display", sans-serif;
+      font-size: clamp(36px, 6vw, 72px);
+      font-stretch: condensed;
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 0.92;
+    }
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      position: relative;
+      z-index: 1;
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #77c7b2; box-shadow: 0 0 0 5px rgba(119, 199, 178, 0.16); }
+    .control-strip {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-top: 0;
+      border-radius: 0 0 18px 18px;
+      box-shadow: var(--shadow);
+    }
+    .window-tabs, .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .button {
+      min-height: 38px;
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--ink);
+      background: #fff;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+    .button:hover { border-color: var(--teal); transform: translateY(-1px); }
+    .button:focus-visible { outline: 3px solid rgba(45, 108, 162, 0.28); outline-offset: 2px; }
+    .button.active { color: #fff; border-color: var(--deep); background: var(--deep); }
+    .button.danger { color: var(--red); border-color: rgba(180, 67, 67, 0.35); }
+    .button.primary { color: #fff; border-color: var(--teal); background: var(--teal); }
+    .button:disabled { opacity: 0.55; cursor: wait; transform: none; }
+    .section { margin-top: 26px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 10px; }
+    .section-heading h2 { margin: 0; font-family: "Arial Narrow", "Aptos Display", sans-serif; font-size: 25px; letter-spacing: -0.025em; }
+    .section-label { margin: 0; color: var(--muted); font-size: 11px; }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(130px, 1fr));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .metric { min-height: 112px; padding: 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .metric:nth-child(6n) { border-right: 0; }
+    .metric:nth-last-child(-n + 6) { border-bottom: 0; }
+    .metric.primary-metric { color: #fff; background: var(--blue); }
+    .metric.primary-metric .metric-label { color: rgba(255, 255, 255, 0.72); }
+    .metric-label { color: var(--muted); font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .metric-value { display: block; margin-top: 13px; font-family: "Arial Narrow", "Aptos Display", sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
+    .two-column { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 0.8fr); gap: 18px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 57px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+    .panel-header h3 { margin: 0; font-size: 15px; }
+    .legend { display: flex; gap: 14px; color: var(--muted); font-size: 12px; }
+    .legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 2px; background: var(--legend-color); }
+    .chart-wrap { height: 290px; padding: 18px; }
+    canvas { width: 100%; height: 100%; display: block; }
+    .state-list { margin: 0; padding: 5px 18px 14px; }
+    .state-row { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px dashed var(--line); }
+    .state-row:last-child { border-bottom: 0; }
+    .state-row dt { color: var(--muted); }
+    .state-row dd { margin: 0; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+    .status-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px; }
+    .status-chip { display: flex; align-items: center; gap: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; }
+    .status-chip strong { font-size: 18px; }
+    .status-chip[data-family="2"] { border-left: 4px solid var(--teal); }
+    .status-chip[data-family="4"] { border-left: 4px solid var(--amber); }
+    .status-chip[data-family="5"] { border-left: 4px solid var(--red); }
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    th { position: sticky; top: 0; z-index: 1; padding: 12px 14px; color: var(--muted); background: #e6edf0; text-align: right; font-size: 10px; }
+    th:first-child, td:first-child { text-align: left; }
+    td { padding: 13px 14px; border-top: 1px solid var(--line); text-align: right; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+    tbody tr:hover { background: rgba(45, 108, 162, 0.055); }
+    .model-name { display: block; font-family: "Aptos", "Segoe UI", sans-serif; font-size: 14px; font-weight: 700; }
+    .model-id { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .empty { padding: 36px 18px; color: var(--muted); text-align: center; }
+    .toast { position: fixed; right: 22px; bottom: 22px; max-width: min(390px, calc(100% - 44px)); padding: 13px 16px; color: #fff; background: var(--deep); border-radius: 10px; box-shadow: var(--shadow); opacity: 0; transform: translateY(10px); pointer-events: none; transition: opacity 160ms ease, transform 160ms ease; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--red); }
+    @media (max-width: 1080px) {
+      .metric-grid { grid-template-columns: repeat(3, 1fr); }
+      .metric:nth-child(3n) { border-right: 0; }
+      .metric:nth-last-child(-n + 6) { border-bottom: 1px solid var(--line); }
+      .metric:nth-last-child(-n + 3) { border-bottom: 0; }
+      .two-column { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 18px, 1500px); margin-top: 9px; }
+      .masthead { grid-template-columns: 1fr; padding: 24px 20px; }
+      .control-strip { align-items: stretch; flex-direction: column; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      .metric:nth-child(3n) { border-right: 1px solid var(--line); }
+      .metric:nth-child(2n) { border-right: 0; }
+      .metric:nth-last-child(-n + 3) { border-bottom: 1px solid var(--line); }
+      .metric:nth-last-child(-n + 2) { border-bottom: 0; }
+      .chart-wrap { height: 230px; padding: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div><p class="eyebrow">Stripchat adapter / live operations</p><h1>Traffic desk</h1></div>
+      <div class="live-status"><span class="live-dot" aria-hidden="true"></span><span id="updated-at">Connecting…</span></div>
+    </header>
+    <nav class="control-strip" aria-label="Dashboard controls">
+      <div class="window-tabs" aria-label="Time range">
+        <button class="button active" data-window="1h">1 hour</button>
+        <button class="button" data-window="6h">6 hours</button>
+        <button class="button" data-window="24h">24 hours</button>
+        <button class="button" data-window="7d">7 days</button>
+      </div>
+      <div class="actions">
+        <button class="button danger" id="flush-cache">Flush all cache</button>
+        <button class="button primary" id="recreate-session">Recreate session</button>
+      </div>
+    </nav>
+    <section class="section" aria-labelledby="overview-title">
+      <div class="section-heading"><h2 id="overview-title">Window overview</h2><p class="section-label" id="window-label">Last 1 hour</p></div>
+      <div class="metric-grid">
+        <div class="metric primary-metric"><span class="metric-label">Requests</span><strong class="metric-value" data-metric="total">—</strong></div>
+        <div class="metric"><span class="metric-label">2xx</span><strong class="metric-value" data-metric="successful">—</strong></div>
+        <div class="metric"><span class="metric-label">4xx</span><strong class="metric-value" data-metric="client_errors">—</strong></div>
+        <div class="metric"><span class="metric-label">5xx</span><strong class="metric-value" data-metric="server_errors">—</strong></div>
+        <div class="metric"><span class="metric-label">CF blocks</span><strong class="metric-value" data-metric="cloudflare_blocks">—</strong></div>
+        <div class="metric"><span class="metric-label">Cache rate</span><strong class="metric-value" data-metric="cache_hit_rate" data-suffix="%">—</strong></div>
+        <div class="metric"><span class="metric-label">Cache hits</span><strong class="metric-value" data-metric="cache_hits">—</strong></div>
+        <div class="metric"><span class="metric-label">Cache misses</span><strong class="metric-value" data-metric="cache_misses">—</strong></div>
+        <div class="metric"><span class="metric-label">Stale saves</span><strong class="metric-value" data-metric="stale_hits">—</strong></div>
+        <div class="metric"><span class="metric-label">Retries</span><strong class="metric-value" data-metric="retries">—</strong></div>
+        <div class="metric"><span class="metric-label">Session rotations</span><strong class="metric-value" data-metric="session_rotations">—</strong></div>
+        <div class="metric"><span class="metric-label">Average latency</span><strong class="metric-value" data-metric="average_latency_ms" data-suffix=" ms">—</strong></div>
+      </div>
+    </section>
+    <section class="section two-column" aria-label="Traffic and current state">
+      <article class="panel">
+        <div class="panel-header"><h3>Request traffic</h3><div class="legend"><span style="--legend-color: var(--teal)">2xx</span><span style="--legend-color: var(--amber)">4xx</span><span style="--legend-color: var(--red)">5xx</span></div></div>
+        <div class="chart-wrap"><canvas id="traffic-chart" role="img" aria-label="Requests over time"></canvas></div>
+      </article>
+      <aside class="panel">
+        <div class="panel-header"><h3>Current adapter state</h3></div>
+        <dl class="state-list">
+          <div class="state-row"><dt>Browser session</dt><dd id="state-session">—</dd></div>
+          <div class="state-row"><dt>Session name</dt><dd id="state-session-name">—</dd></div>
+          <div class="state-row"><dt>Cache entries</dt><dd id="state-cache">—</dd></div>
+          <div class="state-row"><dt>Queued requests</dt><dd id="state-queue">—</dd></div>
+          <div class="state-row"><dt>Active request</dt><dd id="state-active">—</dd></div>
+          <div class="state-row"><dt>Cooldown</dt><dd id="state-cooldown">—</dd></div>
+        </dl>
+      </aside>
+    </section>
+    <section class="section panel" aria-labelledby="status-title">
+      <div class="panel-header"><h3 id="status-title">Exact response statuses</h3><span class="section-label">Adapter response</span></div>
+      <div class="status-list" id="status-list"><div class="empty">No requests in this window.</div></div>
+    </section>
+    <section class="section panel" aria-labelledby="models-title">
+      <div class="panel-header"><h3 id="models-title">Models</h3><span class="section-label" id="model-count">0 models</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Model</th><th>Requests</th><th>Cache hits</th><th>Cache misses</th><th>2xx</th><th>4xx</th><th>5xx</th><th>CF blocks</th></tr></thead>
+          <tbody id="models-body"><tr><td colspan="8" class="empty">Waiting for traffic…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    const windowLabels = { "1h": "Last 1 hour", "6h": "Last 6 hours", "24h": "Last 24 hours", "7d": "Last 7 days" };
+    let selectedWindow = "1h";
+    let latestTimeline = [];
+    let toastTimer;
+    const number = value => new Intl.NumberFormat().format(value ?? 0);
+    const shortTime = value => value ? new Date(value * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.toggle("error", isError);
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
+    }
+    function renderSummary(summary) {
+      document.querySelectorAll("[data-metric]").forEach(element => {
+        const value = summary[element.dataset.metric] ?? 0;
+        element.textContent = `${number(value)}${element.dataset.suffix || ""}`;
+      });
+    }
+    function renderState(state) {
+      document.getElementById("state-session").textContent = state.session_ready ? "Ready" : "Not created";
+      document.getElementById("state-session-name").textContent = state.session_name;
+      document.getElementById("state-cache").textContent = number(state.cache_entries);
+      document.getElementById("state-queue").textContent = number(state.queue_depth);
+      document.getElementById("state-active").textContent = state.request_active ? "Yes" : "No";
+      document.getElementById("state-cooldown").textContent = state.cooldown_seconds ? `${state.cooldown_seconds}s` : "Clear";
+    }
+    function renderStatuses(statuses) {
+      const target = document.getElementById("status-list");
+      if (!statuses.length) { target.innerHTML = '<div class="empty">No requests in this window.</div>'; return; }
+      target.innerHTML = statuses.map(item => `<div class="status-chip" data-family="${String(item.status)[0]}"><span>${item.status}</span><strong>${number(item.total)}</strong></div>`).join("");
+    }
+    function escapeHtml(value) {
+      const element = document.createElement("span");
+      element.textContent = value ?? "";
+      return element.innerHTML;
+    }
+    function renderModels(models) {
+      document.getElementById("model-count").textContent = `${number(models.length)} models`;
+      const body = document.getElementById("models-body");
+      if (!models.length) { body.innerHTML = '<tr><td colspan="8" class="empty">No model traffic in this window.</td></tr>'; return; }
+      body.innerHTML = models.map(model => `<tr>
+        <td><span class="model-name">${escapeHtml(model.username)}</span><span class="model-id">${escapeHtml(model.model_id || "No model ID")}</span></td>
+        <td>${number(model.requests)}</td><td>${number(model.cache_hits)}</td><td>${number(model.cache_misses)}</td>
+        <td>${number(model.successful)}</td><td>${number(model.client_errors)}</td><td>${number(model.server_errors)}</td><td>${number(model.cloudflare_blocks)}</td>
+      </tr>`).join("");
+    }
+    function drawChart(points) {
+      latestTimeline = points;
+      const canvas = document.getElementById("traffic-chart");
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.round(rect.width * ratio));
+      canvas.height = Math.max(1, Math.round(rect.height * ratio));
+      const context = canvas.getContext("2d");
+      context.scale(ratio, ratio);
+      const width = rect.width, height = rect.height;
+      const padding = { top: 10, right: 8, bottom: 28, left: 34 };
+      const chartWidth = width - padding.left - padding.right;
+      const chartHeight = height - padding.top - padding.bottom;
+      context.clearRect(0, 0, width, height);
+      context.font = '10px ui-monospace, "SFMono-Regular", Consolas, monospace';
+      context.fillStyle = "#70838c";
+      context.strokeStyle = "#d5dee2";
+      context.lineWidth = 1;
+      const max = Math.max(1, ...points.map(point => point.total));
+      for (let step = 0; step <= 4; step += 1) {
+        const y = padding.top + chartHeight * step / 4;
+        context.beginPath(); context.moveTo(padding.left, y); context.lineTo(width - padding.right, y); context.stroke();
+        context.fillText(String(Math.round(max * (4 - step) / 4)), 2, y + 3);
+      }
+      if (!points.length) { context.fillText("No requests in this window", padding.left + 8, padding.top + 24); return; }
+      const gap = 2;
+      const barWidth = Math.max(2, chartWidth / points.length - gap);
+      points.forEach((point, index) => {
+        const x = padding.left + index * chartWidth / points.length;
+        let y = padding.top + chartHeight;
+        [[point.successful, "#1d7a7a"], [point.client_errors, "#c47b20"], [point.server_errors, "#b44343"]].forEach(([value, color]) => {
+          const segment = chartHeight * value / max;
+          y -= segment; context.fillStyle = color; context.fillRect(x, y, barWidth, segment);
+        });
+      });
+      context.fillStyle = "#70838c";
+      [0, Math.floor((points.length - 1) / 2), points.length - 1].forEach((index, position) => {
+        const label = shortTime(points[index].timestamp);
+        const measured = context.measureText(label).width;
+        const x = position === 0 ? padding.left : position === 2 ? width - padding.right - measured : padding.left + chartWidth / 2 - measured / 2;
+        context.fillText(label, x, height - 5);
+      });
+    }
+    async function loadDashboard() {
+      try {
+        const response = await fetch(`/api/dashboard?window=${selectedWindow}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Dashboard returned ${response.status}`);
+        const data = await response.json();
+        renderSummary(data.summary); renderState(data.state); renderStatuses(data.statuses); renderModels(data.models); drawChart(data.timeline);
+        document.getElementById("updated-at").textContent = `Updated ${new Date(data.generated_at * 1000).toLocaleTimeString()}`;
+      } catch (error) {
+        document.getElementById("updated-at").textContent = "Dashboard unavailable";
+        showToast(error.message, true);
+      }
+    }
+    async function runAction(button, path, confirmation, successMessage) {
+      if (!confirm(confirmation)) return;
+      button.disabled = true;
+      try {
+        const response = await fetch(path, { method: "POST" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `Request returned ${response.status}`);
+        showToast(typeof successMessage === "function" ? successMessage(data) : successMessage);
+        await loadDashboard();
+      } catch (error) { showToast(error.message, true); }
+      finally { button.disabled = false; }
+    }
+    document.querySelectorAll("[data-window]").forEach(button => button.addEventListener("click", () => {
+      selectedWindow = button.dataset.window;
+      document.querySelectorAll("[data-window]").forEach(item => item.classList.toggle("active", item === button));
+      document.getElementById("window-label").textContent = windowLabels[selectedWindow];
+      loadDashboard();
+    }));
+    document.getElementById("flush-cache").addEventListener("click", event => runAction(event.currentTarget, "/api/admin/cache/flush", "Flush every cached model mapping? The next recorder poll will refresh them through the paced queue.", data => `Cleared ${data.cleared} cache ${data.cleared === 1 ? "entry" : "entries"}.`));
+    document.getElementById("recreate-session").addEventListener("click", event => runAction(event.currentTarget, "/api/admin/session/recreate", "Destroy and recreate the FlareSolverr browser session? Incoming requests will wait briefly.", "FlareSolverr session recreated."));
+    window.addEventListener("resize", () => drawChart(latestTimeline));
+    loadDashboard();
+    setInterval(loadDashboard, 15000);
+  </script>
+</body>
+</html>

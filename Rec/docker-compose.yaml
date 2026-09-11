@@ -1,5 +1,6 @@
 services:
   stripchat-adapter:
+    image: localhost/rec_stripchat-adapter:latest
     build:
       context: ./adapter
       dockerfile: Containerfile
@@ -7,13 +8,20 @@ services:
     restart: unless-stopped
     environment:
       - FLARESOLVERR_URL=http://flaresolverr:8191/v1
+      - METRICS_DB_PATH=/data/metrics.sqlite3
+    ports:
+      - "127.0.0.1:9010:8080"
     volumes:
       - ./adapter/certs:/certs:ro,z
+      - ./adapter/data:/data:Z
     networks:
       - media_default
 
   stripchat-recorder:
-    image: chantrail/stripchat-recorder:latest
+    # image: chantrail/stripchat-recorder:latest
+    build:
+      context: ./StripchatRecorder
+      dockerfile: Dockerfile
     container_name: stripchat-recorder
     restart: unless-stopped
 
