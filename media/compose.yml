@@ -60,6 +60,8 @@ services:
       - LOG_HTML=false
       - CAPTCHA_SOLVER=none
       - TZ=Asia/Kolkata
+    tmpfs:
+      - /tmp:size=1g,mode=1777
     ports:
       - "8191:8191"
     restart: unless-stopped
